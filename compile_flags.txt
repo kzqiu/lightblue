@@ -1,0 +1,4 @@
+-L/usr/lib
+-lm 
+-lpthread
+-I/usr/local/include/blis
