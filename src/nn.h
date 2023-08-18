@@ -1,39 +1,5 @@
 #ifndef NN_H
 #define NN_H
-#include <math.h>
-
-// Math functionality
-static inline double _dot_product(double *a, double *b, int size) {
-    double sum = 0;
-
-    for (int i = 0; i < size; i++) {
-        sum += *(a + i) * *(b + i);
-    }
-
-    return sum;
-}
-
-static inline double _sigmoid(double x) {
-    return 1.0 / (1.0 + exp(x));
-}
-
-static inline double _sigmoid_derivative(double x) {
-    return x * (1 - x);
-}
-
-// double tanh(double x);
-
-static inline double _tanh_derivative(double x) {
-    return 1 - pow(x, 2);
-}
-
-static inline double _relu(double x) {
-    return x < 0 ? 0 : x;
-}
-
-static inline double _relu_derivative(double x) {
-    return x < 0 ? 0 : 1;
-}
 
 // Perceptron
 typedef struct perceptron {
@@ -54,21 +20,29 @@ void perceptron_train_avg(perceptron_t *perceptron, int n_iter, int n_training_p
 
 double perceptron_test(perceptron_t *perceptron, double *x);
 
+typedef double (*error_fn_t)(double *, double *, int);
+typedef double (*activation_fn_t)(double, int);
+
 // Deep Neural Network (Multilayer Perceptron)
-typedef struct layer {
-    int size;
-    double *weights;
-    double (*activation)(double);
+typedef struct _layer {
+    int n_neurons;
+    int n_prev_neurons;
+    double *weights; // n_neurons * n_prev_neurons = matrix of weights!
+    double *biases; // n_neurons
+    double *act_values; // n_neurons
+    activation_fn_t activation;
 } layer_t;
 
-typedef struct dnn {
+typedef struct _dnn {
     int n_layers;
+    int input_size;
     layer_t *layers;
+    error_fn_t error_fn;
 } dnn_t;
 
-dnn_t *dnn_new(int n_layers, int *sizes);
+dnn_t *dnn_new(int n_layers, int *sizes, int input_size, error_fn_t error_fn, activation_fn_t *activation);
 
-void dnn_train(dnn_t *nn, int n_epochs, int n_training_points, double *x, double *y);
+void dnn_train(dnn_t *nn, int n_epochs, double learning_rate, int n_training_points, double *x, double *y);
 
 void dnn_free(dnn_t *nn);
 
